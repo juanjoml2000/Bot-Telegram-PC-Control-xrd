@@ -37,7 +37,11 @@ Antes de ejecutar el bot, es necesario obtener un Token y el ID personal:
     - Contactar con [@BotFather](https://t.me/botfather) en Telegram.
     - Enviar el comando `/newbot` y seguir las instrucciones.
     - BotFather proporcionara un **API Token** (ejemplo: `123456789:ABCDefgh...`).
-2.  **Obtener el ID de Usuario**:
+3.  **Cambiar la foto del Bot**:
+    - En el mismo chat de [@BotFather](https://t.me/botfather), enviar el comando `/setuserpic`.
+    - Seleccionar el bot de la lista.
+    - Adjuntar y enviar la imagen que se desee establecer como perfil (puedes usar el archivo `icon_xrd.png` incluido en este repositorio).
+4.  **Obtener el ID de Usuario**:
     - Contactar con bots como [@userinfobot](https://t.me/userinfobot) o [@RawDataBot](https://t.me/rawdatabot).
     - Al enviar un mensaje, responderan con un `id` numérico (ejemplo: `123456789`). Este ID garantiza que solo el administrador pueda controlar el PC.
 
@@ -67,6 +71,26 @@ Existen dos opciones para iniciar el bot:
 - **Modo segundo plano (con icono en tray)**: Ejecutar `pythonw bot_tray.pyw`. El bot se ejecutara silenciosamente con un icono en la bandeja del sistema.
 
 Una vez activo, enviar el comando `/start` al bot en Telegram para desplegar el menu interactivo.
+
+---
+
+## Acceso rapido desde el movil
+
+Para un control mas comodo, es recomendable añadir un acceso directo al chat del bot en la pantalla de inicio del movil.
+
+### En Android
+1. Abrir el chat del bot en Telegram.
+2. Pulsar en el nombre del bot en la parte superior.
+3. Pulsar en el icono de los tres puntos (Menu).
+4. Seleccionar "Añadir a pantalla de inicio".
+
+### En iOS (Shortcuts/Atajos)
+1. Abrir la aplicacion "Atajos" (Shortcuts).
+2. Crear un nuevo atajo pulsando en el "+".
+3. Añadir la accion "Abrir URLs".
+4. Escribir la URL del bot (ejemplo: `https://t.me/TuBotUsername`).
+5. Pulsar en el icono de compartir y seleccionar "Añadir a pantalla de inicio".
+6. Se puede personalizar el nombre y el icono (usando el logo del proyecto).
 
 ---
 
