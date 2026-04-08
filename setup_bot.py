@@ -116,10 +116,10 @@ class SetupApp:
         btn_frame = ttk.Frame(self.main_container)
         btn_frame.pack(fill="x", pady=10)
         
-        self.btn_save = tk.Button(btn_frame, text="✅ GUARDAR Y CONFIGURAR", bg=COLORS["success"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.save_settings, padding=10)
+        self.btn_save = tk.Button(btn_frame, text="✅ GUARDAR Y CONFIGURAR", bg=COLORS["success"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.save_settings, padx=10, pady=10)
         self.btn_save.pack(side="left", fill="x", expand=True, padx=5)
         
-        self.btn_startup = tk.Button(btn_frame, text="🚀 AÑADIR AL INICIO", bg=COLORS["accent"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.add_to_startup, padding=10)
+        self.btn_startup = tk.Button(btn_frame, text="🚀 AÑADIR AL INICIO", bg=COLORS["accent"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.add_to_startup, padx=10, pady=10)
         self.btn_startup.pack(side="left", fill="x", expand=True, padx=5)
 
     def browse_path(self, idx):
