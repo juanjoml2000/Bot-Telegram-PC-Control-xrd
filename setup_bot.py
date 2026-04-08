@@ -19,7 +19,7 @@ class SetupApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Bot XRD - Instalador y Configurador")
-        self.root.geometry("700x850")
+        self.root.geometry("700x900")
         self.root.configure(bg=COLORS["bg"])
 
         self.style = ttk.Style()
@@ -110,17 +110,32 @@ class SetupApp:
             btn_browse.grid(row=0, column=2, padx=2)
             f_app2.columnconfigure(1, weight=1)
 
-        # Sección 4: Acciones
-        self.create_section_header(self.main_container, "4. Acciones Finales")
+        # Sección 4: Opciones
+        self.create_section_header(self.main_container, "4. Opciones")
+        
+        self.reinstall_deps = tk.BooleanVar(value=False)
+        chk_deps = tk.Checkbutton(
+            self.main_container, text="🔄 Reinstalar dependencias (pip install)",
+            variable=self.reinstall_deps, bg=COLORS["bg"], fg=COLORS["fg"],
+            selectcolor=COLORS["secondary"], activebackground=COLORS["bg"],
+            activeforeground=COLORS["fg"], font=("Segoe UI", 10)
+        )
+        chk_deps.pack(anchor="w", pady=(5, 10))
+
+        # Sección 5: Acciones
+        self.create_section_header(self.main_container, "5. Acciones Finales")
         
         btn_frame = ttk.Frame(self.main_container)
         btn_frame.pack(fill="x", pady=10)
         
-        self.btn_save = tk.Button(btn_frame, text="✅ GUARDAR Y CONFIGURAR", bg=COLORS["success"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.save_settings, padx=10, pady=10)
+        self.btn_save = tk.Button(btn_frame, text="✅ GUARDAR CONFIG", bg=COLORS["success"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.save_settings, padx=10, pady=10)
         self.btn_save.pack(side="left", fill="x", expand=True, padx=5)
         
-        self.btn_startup = tk.Button(btn_frame, text="🚀 AÑADIR AL INICIO", bg=COLORS["accent"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.add_to_startup, padx=10, pady=10)
+        self.btn_startup = tk.Button(btn_frame, text="🚀 AL INICIO", bg=COLORS["accent"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.add_to_startup, padx=10, pady=10)
         self.btn_startup.pack(side="left", fill="x", expand=True, padx=5)
+        
+        self.btn_desktop = tk.Button(btn_frame, text="📌 ESCRITORIO", bg="#cba6f7", fg="#000", font=("Segoe UI", 10, "bold"), command=self.add_to_desktop, padx=10, pady=10)
+        self.btn_desktop.pack(side="left", fill="x", expand=True, padx=5)
 
     def browse_path(self, idx):
         path = filedialog.askopenfilename(title=f"Seleccionar ejecutable para App {idx}")
@@ -199,24 +214,56 @@ class SetupApp:
             with open("config.json", "w", encoding='utf-8') as f:
                 json.dump(config, f, indent=2, ensure_ascii=False)
 
-            messagebox.showinfo("Éxito", "Configuración guardada correctamente.")
+            # 3. Instalar dependencias solo si el checkbox está marcado
+            if self.reinstall_deps.get():
+                try:
+                    subprocess.run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                    messagebox.showinfo("Éxito", "Configuración guardada y dependencias reinstaladas correctamente.")
+                except Exception as pip_e:
+                    messagebox.showwarning("Aviso", f"Configuración guardada, pero hubo un problema al instalar las dependencias:\n{pip_e}\n\nPor favor, ejecuta 'pip install -r requirements.txt' manualmente.")
+            else:
+                messagebox.showinfo("Éxito", "✅ Configuración guardada correctamente.\n\n(Las dependencias no se reinstalaron. Marca la casilla si necesitas reinstalarlas.)")
+
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo guardar la configuración: {e}")
 
+    def _get_shortcut_params(self):
+        """Devuelve los parámetros comunes para crear accesos directos."""
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        core_dir = os.path.join(script_dir, "core")
+        assets_dir = os.path.join(script_dir, "assets")
+        bot_tray_path = os.path.join(core_dir, "bot_tray.pyw")
+        
+        pythonw_path = sys.executable.replace("python.exe", "pythonw.exe")
+        if not os.path.exists(pythonw_path):
+            pythonw_path = "pythonw"
+        
+        icon_path = os.path.join(assets_dir, "bot_xrd.ico")
+        return pythonw_path, bot_tray_path, core_dir, icon_path
+
+    def _create_shortcut(self, shortcut_path):
+        """Crea un acceso directo .lnk en la ruta indicada."""
+        pythonw_path, bot_tray_path, core_dir, icon_path = self._get_shortcut_params()
+        ps_cmd = f'$s=(New-Object -COM WScript.Shell).CreateShortcut("{shortcut_path}");$s.TargetPath="{pythonw_path}";$s.Arguments="`"{bot_tray_path}`"";$s.WorkingDirectory="{core_dir}";$s.IconLocation="{icon_path}";$s.Save()'
+        subprocess.run(["powershell", "-Command", ps_cmd], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+
     def add_to_startup(self):
         try:
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            bat_path = os.path.join(script_dir, "Bot_xrd.bat")
             startup_path = os.path.join(os.environ['APPDATA'], r'Microsoft\Windows\Start Menu\Programs\Startup')
             shortcut_path = os.path.join(startup_path, "Bot_xrd.lnk")
-            
-            # PowerShell command to create shortcut
-            ps_cmd = f'$s=(New-Object -COM WScript.Shell).CreateShortcut("{shortcut_path}");$s.TargetPath="{bat_path}";$s.WorkingDirectory="{script_dir}";$s.IconLocation="{os.path.join(script_dir, "bot_xrd.ico")}";$s.Save()'
-            subprocess.run(["powershell", "-Command", ps_cmd], check=True)
-            
-            messagebox.showinfo("Éxito", "El Bot se ha añadido al inicio de Windows correctamente.")
+            self._create_shortcut(shortcut_path)
+            messagebox.showinfo("Éxito", "✅ El Bot se ha añadido al inicio de Windows correctamente.")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo añadir al inicio: {e}")
+
+    def add_to_desktop(self):
+        try:
+            desktop_path = os.path.join(os.environ['USERPROFILE'], 'Desktop')
+            shortcut_path = os.path.join(desktop_path, "Bot XRD.lnk")
+            self._create_shortcut(shortcut_path)
+            messagebox.showinfo("Éxito", "✅ Acceso directo creado en el Escritorio.\n\nHaz doble clic en 'Bot XRD' para lanzar el bot.")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo crear el acceso directo: {e}")
 
 if __name__ == "__main__":
     root = tk.Tk()

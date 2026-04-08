@@ -41,12 +41,14 @@ def run_uninstall():
     if not confirm:
         return
 
-    current_dir = os.path.abspath(os.path.dirname(__file__))
+    # El script está en core/, pero queremos borrar la carpeta padre (bot-telegram)
+    core_dir = os.path.dirname(os.path.abspath(__file__))
+    project_dir = os.path.dirname(core_dir)
     startup_path = get_startup_path()
     shortcut_name = "Bot_xrd.lnk"
     full_shortcut_path = os.path.join(startup_path, shortcut_name)
 
-    print(f"Iniciando desinstalación desde: {current_dir}")
+    print(f"Iniciando desinstalación desde: {project_dir}")
 
     # 1. Remove the startup shortcut if it exists
     if os.path.exists(full_shortcut_path):
@@ -57,7 +59,7 @@ def run_uninstall():
             print(f"Error al eliminar el acceso directo: {e}")
 
     # 2. Identify and terminate running bot processes
-    terminate_bot_processes(current_dir)
+    terminate_bot_processes(project_dir)
     
     # Wait a moment for processes to close
     time.sleep(1)
@@ -71,7 +73,7 @@ def run_uninstall():
     with open(cleanup_script_path, "w", encoding='utf-8') as f:
         f.write("@echo off\n")
         f.write("timeout /t 2 /nobreak > nul\n")
-        f.write(f'rmdir /s /q "{current_dir}"\n')
+        f.write(f'rmdir /s /q "{project_dir}"\n')
         f.write("echo Desinstalación completada con éxito.\n")
         f.write("pause\n")
         f.write("del \"%~f0\"\n")

@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 .vscode/
 dist-github/
+config.json
+DATOS_BACKUP_BOT.txt

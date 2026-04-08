@@ -7,11 +7,14 @@ from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
-# Cargar variables de entorno desde .env
-load_dotenv()
+# Directorio raíz del proyecto
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Cargar configuración desde config.json
-CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
+# Cargar variables de entorno desde .env en la raíz
+load_dotenv(os.path.join(ROOT_DIR, '.env'))
+
+# Cargar configuración desde config.json en la raíz
+CONFIG_PATH = os.path.join(ROOT_DIR, 'config.json')
 if os.path.exists(CONFIG_PATH):
     with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
         config = json.load(f)

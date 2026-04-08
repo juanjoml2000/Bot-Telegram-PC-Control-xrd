@@ -45,6 +45,23 @@ Antes de ejecutar el bot, es necesario obtener un Token y el ID personal:
     - Contactar con bots como [@userinfobot](https://t.me/userinfobot) o [@RawDataBot](https://t.me/rawdatabot).
     - Al enviar un mensaje, responderan con un `id` numérico (ejemplo: `123456789`). Este ID garantiza que solo el administrador pueda controlar el PC.
 
+### Estructura del Proyecto
+
+```text
+📁 bot-telegram
+ ├── ⚙️ setup_bot.py       (Instalador interactivo y automático)
+ ├── 📄 README.md          (Este archivo)
+ ├── 📄 requirements.txt   (Dependencias de Python)
+ ├── 📄 .env.example       (Plantilla de configuración)
+ ├── 📄 config.json        (Nombres de botones y procesos)
+ ├── 📁 core/              (Lógica interna del bot invisible para el usuario)
+ │    ├── bot.py
+ │    ├── bot_tray.pyw
+ │    └── uninstall_bot.py
+ └── 📁 assets/            (Iconos e imágenes)
+      └── ...
+```
+
 ---
 
 ### 2. Instalación Rápida (Recomendado)
@@ -52,19 +69,23 @@ Antes de ejecutar el bot, es necesario obtener un Token y el ID personal:
 Si prefieres una configuración guiada y visual:
 
 1.  Descargar o clonar los archivos del repositorio.
-2.  Ejecutar el instalador gráfico:
+2.  Ejecutar el instalador gráfico en la carpeta principal:
     ```bash
     python setup_bot.py
     ```
+    *(Alternativamente, puedes hacer **doble clic** en `setup_bot.py` desde el Explorador de Archivos de Windows).*
 3.  En la ventana que aparece, introduce tu **Token**, tu **ID** y personaliza los **nombres y rutas** de tus juegos y aplicaciones.
-4.  Pulsa en **"GUARDAR Y CONFIGURAR"**.
-5.  (Opcional) Pulsa en **"AÑADIR AL INICIO"** para que el bot se ejecute siempre al encender el PC.
+4.  (Opcional) Si necesitas instalar o reinstalar las librerías, asegúrate de marcar **"🔄 Reinstalar dependencias (pip install)"**.
+5.  Pulsa en **"✅ GUARDAR CONFIG"**.
+6.  Opciones de inicio rápido:
+    - **"🚀 AL INICIO"**: Para que el bot se ejecute siempre al encender el PC silenciosamente.
+    - **"📌 ESCRITORIO"**: Para crear un acceso directo manual en tu escritorio.
 
 ---
 
 ### 3. Instalacion Manual (Usuarios Avanzados)
 
-Si prefieres configurar los archivos manualmente:
+Si prefieres configurar los archivos manualmente o revisar el código interno:
 
 1.  Descargar o clonar los archivos del repositorio.
 2.  Instalar las dependencias necesarias:
@@ -72,7 +93,9 @@ Si prefieres configurar los archivos manualmente:
     pip install -r requirements.txt
     ```
 3.  Crear un archivo llamado `.env` en la carpeta raiz (basado en `.env.example`) y completar la informacion.
-4.  (Opcional) Modificar el archivo `config.json` para cambiar los nombres de los botones en el menú de Telegram.
+4.  Modificar el archivo `config.json` para cambiar los nombres de los botones en el menú de Telegram.
+5.  Puedes arrancar el bot manualmente ejecutando `python core/bot.py`.
+
 
 ---
 
