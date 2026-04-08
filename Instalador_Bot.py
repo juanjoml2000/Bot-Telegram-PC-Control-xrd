@@ -217,10 +217,10 @@ class SetupApp:
             # 3. Instalar dependencias solo si el checkbox está marcado
             if self.reinstall_deps.get():
                 try:
-                    subprocess.run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                    subprocess.run([sys.executable, "-m", "pip", "install", "-r", "sistema/requirements.txt"], check=True, creationflags=subprocess.CREATE_NO_WINDOW)
                     messagebox.showinfo("Éxito", "Configuración guardada y dependencias reinstaladas correctamente.")
                 except Exception as pip_e:
-                    messagebox.showwarning("Aviso", f"Configuración guardada, pero hubo un problema al instalar las dependencias:\n{pip_e}\n\nPor favor, ejecuta 'pip install -r requirements.txt' manualmente.")
+                    messagebox.showwarning("Aviso", f"Configuración guardada, pero hubo un problema al instalar las dependencias:\n{pip_e}\n\nPor favor, ejecuta 'pip install -r sistema/requirements.txt' manualmente.")
             else:
                 messagebox.showinfo("Éxito", "✅ Configuración guardada correctamente.\n\n(Las dependencias no se reinstalaron. Marca la casilla si necesitas reinstalarlas.)")
 
@@ -230,8 +230,8 @@ class SetupApp:
     def _get_shortcut_params(self):
         """Devuelve los parámetros comunes para crear accesos directos."""
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        core_dir = os.path.join(script_dir, "core")
-        assets_dir = os.path.join(script_dir, "assets")
+        core_dir = os.path.join(script_dir, "sistema", "core")
+        assets_dir = os.path.join(script_dir, "sistema", "assets")
         bot_tray_path = os.path.join(core_dir, "bot_tray.pyw")
         
         pythonw_path = sys.executable.replace("python.exe", "pythonw.exe")

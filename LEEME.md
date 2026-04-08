@@ -49,17 +49,15 @@ Antes de ejecutar el bot, es necesario obtener un Token y el ID personal:
 
 ```text
 📁 bot-telegram
- ├── ⚙️ setup_bot.py       (Instalador interactivo y automático)
- ├── 📄 README.md          (Este archivo)
- ├── 📄 requirements.txt   (Dependencias de Python)
- ├── 📄 .env.example       (Plantilla de configuración)
- ├── 📄 config.json        (Nombres de botones y procesos)
- ├── 📁 core/              (Lógica interna del bot invisible para el usuario)
- │    ├── bot.py
- │    ├── bot_tray.pyw
- │    └── uninstall_bot.py
- └── 📁 assets/            (Iconos e imágenes)
-      └── ...
+ ├── ⚙️ Instalador_Bot.py  (Instalador interactivo y automático)
+ ├── 📄 LEEME.md           (Este archivo)
+ ├── 📄 .env               (Generado automáticamente: Configuración)
+ ├── 📄 config.json        (Generado automáticamente: Nombres de botones y procesos)
+ └── 📁 sistema/           (Archivos internos del bot)
+      ├── 📄 requirements.txt
+      ├── 📄 .env.example
+      ├── 📁 core/         (Lógica interna del bot invisible para el usuario)
+      └── 📁 assets/       (Iconos e imágenes)
 ```
 
 ---
@@ -71,9 +69,9 @@ Si prefieres una configuración guiada y visual:
 1.  Descargar o clonar los archivos del repositorio.
 2.  Ejecutar el instalador gráfico en la carpeta principal:
     ```bash
-    python setup_bot.py
+    python Instalador_Bot.py
     ```
-    *(Alternativamente, puedes hacer **doble clic** en `setup_bot.py` desde el Explorador de Archivos de Windows).*
+    *(Alternativamente, puedes hacer **doble clic** en `Instalador_Bot.py` desde el Explorador de Archivos de Windows).*
 3.  En la ventana que aparece, introduce tu **Token**, tu **ID** y personaliza los **nombres y rutas** de tus juegos y aplicaciones.
 4.  (Opcional) Si necesitas instalar o reinstalar las librerías, asegúrate de marcar **"🔄 Reinstalar dependencias (pip install)"**.
 5.  Pulsa en **"✅ GUARDAR CONFIG"**.
@@ -90,11 +88,11 @@ Si prefieres configurar los archivos manualmente o revisar el código interno:
 1.  Descargar o clonar los archivos del repositorio.
 2.  Instalar las dependencias necesarias:
     ```bash
-    pip install -r requirements.txt
+    pip install -r sistema/requirements.txt
     ```
 3.  Crear un archivo llamado `.env` en la carpeta raiz (basado en `.env.example`) y completar la informacion.
 4.  Modificar el archivo `config.json` para cambiar los nombres de los botones en el menú de Telegram.
-5.  Puedes arrancar el bot manualmente ejecutando `python core/bot.py`.
+5.  Puedes arrancar el bot manualmente ejecutando `python sistema/core/bot.py`.
 
 
 ---
@@ -103,8 +101,8 @@ Si prefieres configurar los archivos manualmente o revisar el código interno:
 
 Existen dos opciones para iniciar el bot:
 
-- **Modo estandar**: Ejecutar `python bot.py`. Se abrira una ventana de consola.
-- **Modo segundo plano (con icono en tray)**: Ejecutar `pythonw bot_tray.pyw`. El bot se ejecutara silenciosamente con un icono en la bandeja del sistema.
+- **Modo estandar**: Ejecutar `python sistema/core/bot.py`. Se abrira una ventana de consola.
+- **Modo segundo plano (con icono en tray)**: Ejecutar `pythonw sistema/core/bot_tray.pyw`. El bot se ejecutara silenciosamente con un icono en la bandeja del sistema.
 
 Una vez activo, enviar el comando `/start` al bot en Telegram para desplegar el menu interactivo.
 
