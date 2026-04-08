@@ -2,12 +2,22 @@ import os
 import time
 import subprocess
 import psutil
+import json
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 # Cargar variables de entorno desde .env
 load_dotenv()
+
+# Cargar configuración desde config.json
+CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
+if os.path.exists(CONFIG_PATH):
+    with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+else:
+    # Configuración por defecto si no existe el archivo
+    config = {"games": [], "apps": []}
 
 TOKEN = os.getenv('TELEGRAM_TOKEN', 'TU_TOKEN_AQUI')
 # ID de administrador autorizado
@@ -26,20 +36,27 @@ def get_main_menu():
     return InlineKeyboardMarkup(keyboard)
 
 def get_games_menu():
-    keyboard = [
-        [InlineKeyboardButton("R6 Siege 🔓", callback_data='abrir_juego_1'), InlineKeyboardButton("R6 Siege ❌", callback_data='cerrar_juego_1')],
-        [InlineKeyboardButton("ARC Raiders 🔓", callback_data='abrir_juego_2'), InlineKeyboardButton("ARC Raiders ❌", callback_data='cerrar_juego_2')],
-        [InlineKeyboardButton("🔙 Volver", callback_data='menu_principal')]
-    ]
+    keyboard = []
+    for game in config.get('games', []):
+        name = game['name']
+        gid = game['id']
+        keyboard.append([
+            InlineKeyboardButton(f"{name} 🔓", callback_data=f'abrir_juego_{gid}'),
+            InlineKeyboardButton(f"{name} ❌", callback_data=f'cerrar_juego_{gid}')
+        ])
+    keyboard.append([InlineKeyboardButton("🔙 Volver", callback_data='menu_principal')])
     return InlineKeyboardMarkup(keyboard)
 
 def get_apps_menu():
-    keyboard = [
-        [InlineKeyboardButton("Discord 🔓", callback_data='abrir_app_1'), InlineKeyboardButton("Discord ❌", callback_data='cerrar_app_1')],
-        [InlineKeyboardButton("Steam 🔓", callback_data='abrir_app_2'), InlineKeyboardButton("Steam ❌", callback_data='cerrar_app_2')],
-        [InlineKeyboardButton("stats.cc 🔓", callback_data='abrir_app_3'), InlineKeyboardButton("stats.cc ❌", callback_data='cerrar_app_3')],
-        [InlineKeyboardButton("🔙 Volver", callback_data='menu_principal')]
-    ]
+    keyboard = []
+    for app in config.get('apps', []):
+        name = app['name']
+        aid = app['id']
+        keyboard.append([
+            InlineKeyboardButton(f"{name} 🔓", callback_data=f'abrir_app_{aid}'),
+            InlineKeyboardButton(f"{name} ❌", callback_data=f'cerrar_app_{aid}')
+        ])
+    keyboard.append([InlineKeyboardButton("🔙 Volver", callback_data='menu_principal')])
     return InlineKeyboardMarkup(keyboard)
 
 def get_system_menu():
@@ -69,28 +86,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         
     await update.message.reply_text('🖥️ **MENÚ PRINCIPAL**\nElige una categoría:', parse_mode='Markdown', reply_markup=get_main_menu())
 
-# Esta función lee los mensajes de texto (para atrapar nombres de procesos)
 async def recibir_mensaje(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
     texto = update.message.text
     
-    # 1. Comprobar autorización por ID
     if user_id != MI_ID_TELEGRAM:
-        return # Ignoramos por completo los mensajes de extraños
+        return
 
-    # 2. Si está autorizado, comprobar si estamos esperando el nombre de un proceso para cerrar
     if context.user_data.get('esperando_proceso'):
         proceso_a_cerrar = texto.strip()
-        # Limpiamos el estado para no seguir esperando
         context.user_data['esperando_proceso'] = False
         
-        # Le añadimos .exe de forma segura si el usuario solo puso el nombre
         if not proceso_a_cerrar.endswith(".exe"):
             proceso_a_cerrar += ".exe"
             
         await update.message.reply_text(f"⏳ Intentando cerrar: {proceso_a_cerrar}...")
         
-        # Ejecutamos taskkill en Windows
         comando = f'taskkill /IM "{proceso_a_cerrar}" /F'
         resultado = os.system(comando)
         
@@ -99,13 +110,11 @@ async def recibir_mensaje(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         else:
             await update.message.reply_text(f"❌ No se pudo cerrar {proceso_a_cerrar}. Puede que no exista o requiera permisos de administrador.")
             
-        # Volvemos a mostrar el menú general de sistema
         await update.message.reply_text("🔧 **Submenú Sistema**\nOpciones de energía y control:", parse_mode='Markdown', reply_markup=get_system_menu())
 
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # 🚨 SISTEMA DE SEGURIDAD PARA LOS BOTONES 🚨
     if update.effective_user.id != MI_ID_TELEGRAM:
-        return # Ignoramos la pulsación del botón si no es tu ID
+        return
         
     query = update.callback_query
     await query.answer()
@@ -114,18 +123,23 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # --- NAVEGACIÓN ---
     if opcion == 'menu_principal':
         await query.edit_message_text(text="🖥️ **MENÚ PRINCIPAL**\nElige una categoría:", parse_mode='Markdown', reply_markup=get_main_menu())
+        return
     
     elif opcion == 'menu_juegos':
         await query.edit_message_text(text="🎮 **Submenú Juegos**\n¿A qué jugamos hoy?", parse_mode='Markdown', reply_markup=get_games_menu())
+        return
         
     elif opcion == 'menu_aplicaciones':
         await query.edit_message_text(text="💻 **Submenú Aplicaciones**\nControl de programas:", parse_mode='Markdown', reply_markup=get_apps_menu())
+        return
         
     elif opcion == 'menu_sistema':
         await query.edit_message_text(text="🔧 **Submenú Sistema**\nOpciones de energía:", parse_mode='Markdown', reply_markup=get_system_menu())
+        return
         
     elif opcion == 'menu_multimedia':
         await query.edit_message_text(text="🎵 **Submenú Multimedia**\nControl de entretenimiento:", parse_mode='Markdown', reply_markup=get_multimedia_menu())
+        return
 
     # --- ACCIÓN: LIMPIAR CHAT ---
     elif opcion == 'limpiar_chat':
@@ -133,75 +147,50 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         chat_id = update.effective_chat.id
         message_id = query.message.message_id
         borrados = 0
-        # Intentamos borrar los últimos 100 mensajes anteriores al actual
         for i in range(1, 100):
             try:
                 await context.bot.delete_message(chat_id=chat_id, message_id=message_id - i)
                 borrados += 1
             except Exception:
-                pass # Si no puede borrar un mensaje, lo saltamos
-        # Mostramos el menú de nuevo con el resultado
+                pass
         await query.edit_message_text(text=f"✅ Chat limpio. {borrados} mensajes borrados.", reply_markup=get_main_menu())
+        return
 
-    # --- ACCIONES: JUEGOS (via Steam) ---
-    elif opcion == 'abrir_juego_1':
-        await query.edit_message_text(text="🎮 Iniciando Rainbow Six Siege via Steam...", reply_markup=get_games_menu())
-        os.system("start steam://rungameid/359550")
-        
-    elif opcion == 'cerrar_juego_1':
-        os.system("taskkill /IM RainbowSix.exe /F")
-        os.system("taskkill /IM RainbowSix_Vulkan.exe /F")
-        await query.edit_message_text(text="❌ Rainbow Six Siege cerrado.", reply_markup=get_games_menu())
+    # --- ACCIONES DINÁMICAS: JUEGOS ---
+    for game in config.get('games', []):
+        gid = str(game['id'])
+        if opcion == f'abrir_juego_{gid}':
+            await query.edit_message_text(text=f"🎮 Iniciando {game['name']} via Steam...", reply_markup=get_games_menu())
+            os.system(f"start steam://rungameid/{game['steam_id']}")
+            return
+        elif opcion == f'cerrar_juego_{gid}':
+            os.system(f'taskkill /IM "{game["process"]}" /F')
+            if "RainbowSix" in game["process"]:
+                os.system("taskkill /IM RainbowSix_Vulkan.exe /F")
+            await query.edit_message_text(text=f"❌ {game['name']} cerrado.", reply_markup=get_games_menu())
+            return
 
-    elif opcion == 'abrir_juego_2':
-        await query.edit_message_text(text="🎮 Iniciando ARC Raiders via Steam...", reply_markup=get_games_menu())
-        os.system("start steam://rungameid/1808500")
-        
-    elif opcion == 'cerrar_juego_2':
-        os.system("taskkill /IM ARC-Win64-Shipping.exe /F")
-        await query.edit_message_text(text="❌ ARC Raiders cerrado.", reply_markup=get_games_menu())
-
-    # --- ACCIONES: APLICACIONES ---
-    elif opcion == 'abrir_app_1':
-        await query.edit_message_text(text="🔓 Abriendo Discord...", reply_markup=get_apps_menu())
-        # Ruta personalizable via .env o valor por defecto
-        ruta_discord = os.getenv('DISCORD_PATH', r"C:\Path\To\Discord\Update.exe")
-        argumentos = ["--processStart", "Discord.exe"]
-        if os.path.exists(ruta_discord):
-            subprocess.Popen([ruta_discord] + argumentos)
-        else:
-            await query.edit_message_text(text="❌ Error: No se encontró la ruta de Discord. Configúrala en el archivo .env", reply_markup=get_apps_menu())
-        
-    elif opcion == 'cerrar_app_1':
-        os.system("taskkill /IM Discord.exe /F")
-        await query.edit_message_text(text="❌ Discord cerrado.", reply_markup=get_apps_menu())
-
-    elif opcion == 'abrir_app_2':
-        await query.edit_message_text(text="🔓 Abriendo Steam...", reply_markup=get_apps_menu())
-        ruta_steam = os.getenv('STEAM_PATH', r"C:\Program Files (x86)\Steam\Steam.exe")
-        if os.path.exists(ruta_steam):
-            subprocess.Popen([ruta_steam])
-        else:
-            await query.edit_message_text(text="❌ Error: No se encontró la ruta de Steam. Configúrala en el archivo .env", reply_markup=get_apps_menu())
-        
-    elif opcion == 'cerrar_app_2':
-        os.system("taskkill /IM steam.exe /F")
-        await query.edit_message_text(text="❌ Steam cerrado.", reply_markup=get_apps_menu())
-
-    elif opcion == 'abrir_app_3':
-        await query.edit_message_text(text="🔓 Abriendo stats.cc...", reply_markup=get_apps_menu())
-        ruta_stats = os.getenv('STATS_CC_PATH', r"C:\Path\To\stats.cc.exe")
-        if os.path.exists(ruta_stats):
-            subprocess.Popen([ruta_stats])
-        else:
-            await query.edit_message_text(text="❌ Error: No se encontró la ruta de stats.cc. Configúrala en el archivo .env", reply_markup=get_apps_menu())
-        
-    elif opcion == 'cerrar_app_3':
-        os.system('taskkill /IM "stats.cc.exe" /F')
-        await query.edit_message_text(text="❌ stats.cc cerrado.", reply_markup=get_apps_menu())
+    # --- ACCIONES DINÁMICAS: APLICACIONES ---
+    for app in config.get('apps', []):
+        aid = str(app['id'])
+        if opcion == f'abrir_app_{aid}':
+            await query.edit_message_text(text=f"🔓 Abriendo {app['name']}...", reply_markup=get_apps_menu())
+            ruta = os.getenv(app['env_key'])
+            argumentos = []
+            if "Discord" in app['name']:
+                argumentos = ["--processStart", "Discord.exe"]
+            if ruta and os.path.exists(ruta):
+                subprocess.Popen([ruta] + argumentos)
+            else:
+                await query.edit_message_text(text=f"❌ Error: Ruta no encontrada para {app['name']}. Revisa el .env ({app['env_key']})", reply_markup=get_apps_menu())
+            return
+        elif opcion == f'cerrar_app_{aid}':
+            os.system(f'taskkill /IM "{app["process"]}" /F')
+            await query.edit_message_text(text=f"❌ {app['name']} cerrado.", reply_markup=get_apps_menu())
+            return
 
     # --- ACCIONES: SISTEMA ---
-    elif opcion == 'sistema_procesos':
+    if opcion == 'sistema_procesos':
         await query.edit_message_text(text="⏳ Recopilando lista de procesos...")
         try:
             procesos = []
@@ -220,19 +209,22 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await query.edit_message_text(text=texto_procesos, parse_mode='Markdown', reply_markup=get_system_menu())
         except Exception as e:
             await query.edit_message_text(text=f"⚠️ Error al obtener procesos: {e}", reply_markup=get_system_menu())
+        return
 
     elif opcion == 'sistema_cerrar_proceso':
-        # Activamos el estado "esperando mensaje del usuario"
         context.user_data['esperando_proceso'] = True
         await query.edit_message_text(text="❌ **CERRAR PROCESO**\n\nEscribe el nombre del proceso que quieres cerrar y envíame el mensaje.\n\nEjemplos: `Spotify.exe`, `chrome`, `Discord`")
+        return
         
     elif opcion == 'sistema_apagar':
         await query.edit_message_text(text="⏻ ¡Apagando el PC en 5 segundos!", reply_markup=get_main_menu())
         os.system("shutdown /s /t 5")
+        return
     
     elif opcion == 'sistema_reiniciar':
         await query.edit_message_text(text="🔄 ¡Reiniciando el PC en 5 segundos!", reply_markup=get_main_menu())
         os.system("shutdown /r /t 5")
+        return
 
     # --- ACCIONES: MULTIMEDIA ---
     elif opcion == 'abrir_youtube':
@@ -251,7 +243,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     elif opcion == 'cerrar_spotify':
         os.system("taskkill /IM Spotify.exe /F")
         await query.edit_message_text(text="❌ Spotify cerrado.", reply_markup=get_multimedia_menu())
-
 
 application = None
 

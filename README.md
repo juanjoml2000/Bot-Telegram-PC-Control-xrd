@@ -45,21 +45,34 @@ Antes de ejecutar el bot, es necesario obtener un Token y el ID personal:
     - Contactar con bots como [@userinfobot](https://t.me/userinfobot) o [@RawDataBot](https://t.me/rawdatabot).
     - Al enviar un mensaje, responderan con un `id` numérico (ejemplo: `123456789`). Este ID garantiza que solo el administrador pueda controlar el PC.
 
-### 2. Instalacion local
+---
+
+### 2. Instalación Rápida (Recomendado)
+
+Si prefieres una configuración guiada y visual:
+
+1.  Descargar o clonar los archivos del repositorio.
+2.  Ejecutar el instalador gráfico:
+    ```bash
+    python setup_bot.py
+    ```
+3.  En la ventana que aparece, introduce tu **Token**, tu **ID** y personaliza los **nombres y rutas** de tus juegos y aplicaciones.
+4.  Pulsa en **"GUARDAR Y CONFIGURAR"**.
+5.  (Opcional) Pulsa en **"AÑADIR AL INICIO"** para que el bot se ejecute siempre al encender el PC.
+
+---
+
+### 3. Instalacion Manual (Usuarios Avanzados)
+
+Si prefieres configurar los archivos manualmente:
 
 1.  Descargar o clonar los archivos del repositorio.
 2.  Instalar las dependencias necesarias:
     ```bash
     pip install -r requirements.txt
     ```
-3.  Crear un archivo llamado `.env` en la carpeta raiz (basado en `.env.example`) y completar la informacion:
-    ```env
-    TELEGRAM_TOKEN=TU_TOKEN_AQUI
-    ADMIN_ID=123456789
-    DISCORD_PATH=C:\Ruta\A\Discord\Update.exe
-    STEAM_PATH=C:\Program Files (x86)\Steam\Steam.exe
-    STATS_CC_PATH=C:\Ruta\A\stats.cc.exe
-    ```
+3.  Crear un archivo llamado `.env` en la carpeta raiz (basado en `.env.example`) y completar la informacion.
+4.  (Opcional) Modificar el archivo `config.json` para cambiar los nombres de los botones en el menú de Telegram.
 
 ---
 
