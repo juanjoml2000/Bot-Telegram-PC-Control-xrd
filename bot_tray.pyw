@@ -6,6 +6,7 @@ import threading
 import os
 import sys
 import signal
+import subprocess
 
 # Asegurarnos de estar en el directorio correcto
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -59,6 +60,15 @@ def salir(icon, item):
     os._exit(0)
 
 
+def desinstalar(icon, item):
+    """Ejecuta el script de desinstalación."""
+    try:
+        # Usamos pythonw para que no se vea la consola de Python durante la confirmación inicial
+        subprocess.Popen(["pythonw", "uninstall_bot.py"])
+    except Exception as e:
+        print(f"Error al iniciar la desinstalación: {e}")
+
+
 def main():
     global tray_icon
 
@@ -70,6 +80,7 @@ def main():
     menu = pystray.Menu(
         pystray.MenuItem("Bot Telegram Activo ✅", lambda: None, enabled=False),
         pystray.Menu.SEPARATOR,
+        pystray.MenuItem("Desinstalar aplicación", desinstalar),
         pystray.MenuItem("Salir", salir)
     )
 

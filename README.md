@@ -74,6 +74,17 @@ Una vez activo, enviar el comando `/start` al bot en Telegram para desplegar el 
 
 ---
 
+## Desinstalación
+
+Para eliminar completamente el bot y sus accesos directos del sistema:
+
+1.  Hacer **clic derecho** sobre el icono del bot en la bandeja del sistema (esquina inferior derecha de Windows).
+2.  Seleccionar la opción **"Desinstalar aplicación"**.
+3.  Confirmar la acción en la ventana emergente.
+4.  Se abrirá una ventana de comandos que eliminará el acceso directo del Inicio de Windows y la carpeta del proyecto.
+
+---
+
 ## Acceso rapido desde el movil
 
 Para un control mas comodo, es recomendable añadir un acceso directo al chat del bot en la pantalla de inicio del movil.
