@@ -65,7 +65,7 @@ def desinstalar(icon, item):
     """Ejecuta el script de desinstalación."""
     try:
         # Usamos pythonw para que no se vea la consola de Python durante la confirmación inicial
-        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uninstall_bot.py")
+        script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "Desinstalador_Bot.py")
         subprocess.Popen(["pythonw", script_path])
     except Exception as e:
         print(f"Error al iniciar la desinstalación: {e}")

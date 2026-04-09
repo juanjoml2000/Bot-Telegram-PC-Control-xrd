@@ -41,9 +41,8 @@ def run_uninstall():
     if not confirm:
         return
 
-    # El script está en core/, pero queremos borrar la carpeta padre (bot-telegram)
-    core_dir = os.path.dirname(os.path.abspath(__file__))
-    project_dir = os.path.dirname(core_dir)
+    # El script ahora está en la raíz (bot-telegram)
+    project_dir = os.path.dirname(os.path.abspath(__file__))
     startup_path = get_startup_path()
     shortcut_name = "Bot_xrd.lnk"
     full_shortcut_path = os.path.join(startup_path, shortcut_name)

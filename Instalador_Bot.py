@@ -30,8 +30,30 @@ class SetupApp:
         self.style.configure("TEntry", fieldbackground=COLORS["secondary"], foreground=COLORS["fg"])
         self.style.configure("Accent.TButton", font=("Segoe UI", 10, "bold"))
 
-        self.main_container = ttk.Frame(root, padding="20")
-        self.main_container.pack(fill="both", expand=True)
+        self.canvas = tk.Canvas(root, bg=COLORS["bg"], highlightthickness=0)
+        self.scrollbar = ttk.Scrollbar(root, orient="vertical", command=self.canvas.yview)
+        
+        self.main_container = ttk.Frame(self.canvas, padding="20")
+        
+        self.main_container.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
+        
+        self.frame_id = self.canvas.create_window((0, 0), window=self.main_container, anchor="nw")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+        
+        self.canvas.bind(
+            "<Configure>",
+            lambda e: self.canvas.itemconfig(self.frame_id, width=e.width)
+        )
+        
+        self.canvas.pack(side="left", fill="both", expand=True)
+        self.scrollbar.pack(side="right", fill="y")
+
+        def _on_mousewheel(event):
+            self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        root.bind_all("<MouseWheel>", _on_mousewheel)
 
         self.create_widgets()
         self.load_data()
@@ -125,17 +147,23 @@ class SetupApp:
         # Sección 5: Acciones
         self.create_section_header(self.main_container, "5. Acciones Finales")
         
-        btn_frame = ttk.Frame(self.main_container)
-        btn_frame.pack(fill="x", pady=10)
+        btn_frame1 = ttk.Frame(self.main_container)
+        btn_frame1.pack(fill="x", pady=(10, 5))
         
-        self.btn_save = tk.Button(btn_frame, text="✅ GUARDAR CONFIG", bg=COLORS["success"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.save_settings, padx=10, pady=10)
+        self.btn_save = tk.Button(btn_frame1, text="✅ GUARDAR CONFIG", bg=COLORS["success"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.save_settings, padx=10, pady=10)
         self.btn_save.pack(side="left", fill="x", expand=True, padx=5)
         
-        self.btn_startup = tk.Button(btn_frame, text="🚀 AL INICIO", bg=COLORS["accent"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.add_to_startup, padx=10, pady=10)
-        self.btn_startup.pack(side="left", fill="x", expand=True, padx=5)
-        
-        self.btn_desktop = tk.Button(btn_frame, text="📌 ESCRITORIO", bg="#cba6f7", fg="#000", font=("Segoe UI", 10, "bold"), command=self.add_to_desktop, padx=10, pady=10)
+        self.btn_desktop = tk.Button(btn_frame1, text="📌 CREAR EN ESCRITORIO", bg="#cba6f7", fg="#000", font=("Segoe UI", 10, "bold"), command=self.add_to_desktop, padx=10, pady=10)
         self.btn_desktop.pack(side="left", fill="x", expand=True, padx=5)
+
+        btn_frame2 = ttk.Frame(self.main_container)
+        btn_frame2.pack(fill="x", pady=(5, 10))
+
+        self.btn_startup = tk.Button(btn_frame2, text="🚀 AÑADIR A INICIO", bg=COLORS["accent"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.add_to_startup, padx=10, pady=10)
+        self.btn_startup.pack(side="left", fill="x", expand=True, padx=5)
+
+        self.btn_remove_startup = tk.Button(btn_frame2, text="❌ QUITAR DE INICIO", bg=COLORS["error"], fg="#000", font=("Segoe UI", 10, "bold"), command=self.remove_from_startup, padx=10, pady=10)
+        self.btn_remove_startup.pack(side="left", fill="x", expand=True, padx=5)
 
     def browse_path(self, idx):
         path = filedialog.askopenfilename(title=f"Seleccionar ejecutable para App {idx}")
@@ -255,6 +283,18 @@ class SetupApp:
             messagebox.showinfo("Éxito", "✅ El Bot se ha añadido al inicio de Windows correctamente.")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo añadir al inicio: {e}")
+
+    def remove_from_startup(self):
+        try:
+            startup_path = os.path.join(os.environ['APPDATA'], r'Microsoft\Windows\Start Menu\Programs\Startup')
+            shortcut_path = os.path.join(startup_path, "Bot_xrd.lnk")
+            if os.path.exists(shortcut_path):
+                os.remove(shortcut_path)
+                messagebox.showinfo("Éxito", "✅ Se ha quitado el bot del inicio de Windows correctamente.")
+            else:
+                messagebox.showinfo("Información", "El bot no estaba configurado para iniciar con Windows.")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo quitar del inicio: {e}")
 
     def add_to_desktop(self):
         try:

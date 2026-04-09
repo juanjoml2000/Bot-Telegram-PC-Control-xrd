@@ -8,7 +8,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 # Directorio raíz del proyecto
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# __file__ -> sistema/core/bot.py -> dirname -> core -> dirname -> sistema -> dirname -> bot-telegram
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Cargar variables de entorno desde .env en la raíz
 load_dotenv(os.path.join(ROOT_DIR, '.env'))

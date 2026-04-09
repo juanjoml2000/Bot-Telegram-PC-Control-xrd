@@ -49,15 +49,18 @@ Antes de ejecutar el bot, es necesario obtener un Token y el ID personal:
 
 ```text
 📁 bot-telegram
- ├── ⚙️ Instalador_Bot.py  (Instalador interactivo y automático)
- ├── 📄 LEEME.md           (Este archivo)
- ├── 📄 .env               (Generado automáticamente: Configuración)
- ├── 📄 config.json        (Generado automáticamente: Nombres de botones y procesos)
- └── 📁 sistema/           (Archivos internos del bot)
+ ├── 🚀 1_Instalar_Python.bat (Instala Python si no lo tienes y abre el instalador)
+ ├── 🗑️ 2_Desinstalar_Python.bat (Remueve Python del sistema de forma silenciosa)
+ ├── ⚙️ Instalador_Bot.py    (Instalador interactivo y automático)
+ ├── 🗑️ Desinstalador_Bot.py (Script para eliminar el bot del sistema)
+ ├── 📄 README.md            (Este archivo)
+ ├── 📄 .env                 (Generado automáticamente: Configuración)
+ ├── 📄 config.json          (Generado automáticamente: Nombres y procesos)
+ └── 📁 sistema/             (Archivos internos del bot)
       ├── 📄 requirements.txt
       ├── 📄 .env.example
-      ├── 📁 core/         (Lógica interna del bot invisible para el usuario)
-      └── 📁 assets/       (Iconos e imágenes)
+      ├── 📁 core/           (Lógica interna del bot invisible para el usuario)
+      └── 📁 assets/         (Iconos e imágenes)
 ```
 
 ---
@@ -67,17 +70,18 @@ Antes de ejecutar el bot, es necesario obtener un Token y el ID personal:
 Si prefieres una configuración guiada y visual:
 
 1.  Descargar o clonar los archivos del repositorio.
-2.  Ejecutar el instalador gráfico en la carpeta principal:
+2.  Ejecutar el asistente inicial con **doble clic** en:
     ```bash
-    python Instalador_Bot.py
+    1_Instalar_Python.bat
     ```
-    *(Alternativamente, puedes hacer **doble clic** en `Instalador_Bot.py` desde el Explorador de Archivos de Windows).*
+    *(Este script comprobará si tienes Python instalado. Si no lo está, lo descargará e instalará automáticamente. Tras esto, se abrirá la ventana gráfica del Bot).*
 3.  En la ventana que aparece, introduce tu **Token**, tu **ID** y personaliza los **nombres y rutas** de tus juegos y aplicaciones.
 4.  (Opcional) Si necesitas instalar o reinstalar las librerías, asegúrate de marcar **"🔄 Reinstalar dependencias (pip install)"**.
 5.  Pulsa en **"✅ GUARDAR CONFIG"**.
-6.  Opciones de inicio rápido:
-    - **"🚀 AL INICIO"**: Para que el bot se ejecute siempre al encender el PC silenciosamente.
-    - **"📌 ESCRITORIO"**: Para crear un acceso directo manual en tu escritorio.
+6.  Opciones de inicio rápido y atajos (puedes bajar con el scroll si no las ves):
+    - **"🚀 AÑADIR A INICIO"**: Para agregar el bot al inicio de Windows.
+    - **"❌ QUITAR DE INICIO"**: Para evitar que el bot arranque con Windows.
+    - **"📌 CREAR EN ESCRITORIO"**: Para crear un acceso directo manual en tu escritorio.
 
 ---
 
@@ -110,12 +114,16 @@ Una vez activo, enviar el comando `/start` al bot en Telegram para desplegar el 
 
 ## Desinstalación
 
-Para eliminar completamente el bot y sus accesos directos del sistema:
+Puedes eliminar completamente el bot, sus procesos y la carpeta entera usando cualquiera de estos métodos:
 
+**Método 1: Desde el archivo principal**
+1. Ejecuta el archivo `Desinstalador_Bot.py` que se encuentra en la carpeta principal del proyecto (`bot-telegram`).
+2. Confirma la ventana de aviso y espera a que la consola termine de limpiar los archivos.
+
+**Método 2: Desde la bandeja del sistema**
 1.  Hacer **clic derecho** sobre el icono del bot en la bandeja del sistema (esquina inferior derecha de Windows).
 2.  Seleccionar la opción **"Desinstalar aplicación"**.
 3.  Confirmar la acción en la ventana emergente.
-4.  Se abrirá una ventana de comandos que eliminará el acceso directo del Inicio de Windows y la carpeta del proyecto.
 
 ---
 
