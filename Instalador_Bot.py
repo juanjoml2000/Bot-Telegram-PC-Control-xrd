@@ -4,6 +4,10 @@ import json
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import subprocess
+import stat
+
+# Asegurar que estamos en el directorio del script
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Estética Premium
 COLORS = {
@@ -102,6 +106,10 @@ class SetupApp:
             ttk.Label(f_game, text="Proceso .exe:").grid(row=0, column=4, padx=5)
             setattr(self, f"game_proc_{i}", ttk.Entry(f_game))
             getattr(self, f"game_proc_{i}").grid(row=0, column=5, sticky="ew", padx=2)
+            
+            btn_browse_game = ttk.Button(f_game, text="...", width=3, command=lambda idx=i: self.browse_path_game(idx))
+            btn_browse_game.grid(row=0, column=6, padx=2)
+            
             f_game.columnconfigure((1, 3, 5), weight=1)
 
         # Sección 3: Aplicaciones
@@ -166,10 +174,34 @@ class SetupApp:
         self.btn_remove_startup.pack(side="left", fill="x", expand=True, padx=5)
 
     def browse_path(self, idx):
-        path = filedialog.askopenfilename(title=f"Seleccionar ejecutable para App {idx}")
+        path = filedialog.askopenfilename(title=f"Seleccionar ejecutable para App {idx}", filetypes=[("Ejecutables", "*.exe"), ("Todos los archivos", "*.*")])
         if path:
+            # Rellenar ruta
             getattr(self, f"app_path_{idx}").delete(0, tk.END)
             getattr(self, f"app_path_{idx}").insert(0, path)
+            
+            # Autocompletar nombre de proceso
+            exe_name = os.path.basename(path)
+            getattr(self, f"app_proc_{idx}").delete(0, tk.END)
+            getattr(self, f"app_proc_{idx}").insert(0, exe_name)
+            
+            # Si el nombre de la app está vacío, sugerir el nombre del archivo (sin .exe)
+            if not getattr(self, f"app_name_{idx}").get().strip():
+                name_suggest = os.path.splitext(exe_name)[0].capitalize()
+                getattr(self, f"app_name_{idx}").insert(0, name_suggest)
+
+    def browse_path_game(self, idx):
+        path = filedialog.askopenfilename(title=f"Seleccionar ejecutable para Juego {idx}", filetypes=[("Ejecutables", "*.exe"), ("Todos los archivos", "*.*")])
+        if path:
+            exe_name = os.path.basename(path)
+            # Rellenar proceso
+            getattr(self, f"game_proc_{idx}").delete(0, tk.END)
+            getattr(self, f"game_proc_{idx}").insert(0, exe_name)
+            
+            # Si el nombre del juego está vacío, sugerir el nombre del archivo
+            if not getattr(self, f"game_name_{idx}").get().strip():
+                name_suggest = os.path.splitext(exe_name)[0].capitalize()
+                getattr(self, f"game_name_{idx}").insert(0, name_suggest)
 
     def load_data(self):
         # Cargar .env
@@ -205,16 +237,29 @@ class SetupApp:
 
     def save_settings(self):
         try:
-            # 1. Guardar .env
+            # 1. Preparar y Guardar .env
+            env_path = ".env"
+            # Intentar quitar atributo de solo lectura si existe
+            if os.path.exists(env_path):
+                try:
+                    os.chmod(env_path, stat.S_IWRITE)
+                except:
+                    pass
+
             env_content = [
-                f"TELEGRAM_TOKEN={self.entry_token.get()}",
-                f"ADMIN_ID={self.entry_admin_id.get()}",
-                f"DISCORD_PATH={self.app_path_1.get()}",
-                f"STEAM_PATH={self.app_path_2.get()}",
-                f"STATS_CC_PATH={self.app_path_3.get()}"
+                f"TELEGRAM_TOKEN={self.entry_token.get().strip()}",
+                f"ADMIN_ID={self.entry_admin_id.get().strip()}",
+                f"DISCORD_PATH={self.app_path_1.get().strip()}",
+                f"STEAM_PATH={self.app_path_2.get().strip()}",
+                f"STATS_CC_PATH={self.app_path_3.get().strip()}"
             ]
-            with open(".env", "w", encoding='utf-8') as f:
-                f.write("\n".join(env_content))
+            
+            try:
+                with open(env_path, "w", encoding='utf-8') as f:
+                    f.write("\n".join(env_content))
+            except PermissionError:
+                messagebox.showerror("Error de Permisos", "No se pudo escribir en el archivo '.env'.\n\nPOSIBLE SOLUCIÓN:\n1. Cierra el Bot (bot_tray.pyw) si se está ejecutando en segundo plano.\n2. Asegúrate de tener permisos de administrador.\n3. Revisa que el archivo no esté abierto en otro programa.")
+                return
 
             # 2. Guardar config.json
             config = {
@@ -222,22 +267,32 @@ class SetupApp:
                 "apps": []
             }
             
+            # Filtrar solo juegos que tengan nombre
+            valid_game_count = 1
             for i in range(1, 3):
-                config["games"].append({
-                    "id": str(i),
-                    "name": getattr(self, f"game_name_{i}").get(),
-                    "steam_id": getattr(self, f"game_sid_{i}").get(),
-                    "process": getattr(self, f"game_proc_{i}").get()
-                })
+                name = getattr(self, f"game_name_{i}").get().strip()
+                if name:
+                    config["games"].append({
+                        "id": str(valid_game_count),
+                        "name": name,
+                        "steam_id": getattr(self, f"game_sid_{i}").get().strip(),
+                        "process": getattr(self, f"game_proc_{i}").get().strip()
+                    })
+                    valid_game_count += 1
             
+            # Filtrar solo apps que tengan nombre
             env_keys = ["DISCORD_PATH", "STEAM_PATH", "STATS_CC_PATH"]
+            valid_app_count = 1
             for i in range(1, 4):
-                config["apps"].append({
-                    "id": str(i),
-                    "name": getattr(self, f"app_name_{i}").get(),
-                    "env_key": env_keys[i-1],
-                    "process": getattr(self, f"app_proc_{i}").get()
-                })
+                name = getattr(self, f"app_name_{i}").get().strip()
+                if name:
+                    config["apps"].append({
+                        "id": str(valid_app_count),
+                        "name": name,
+                        "env_key": env_keys[i-1],
+                        "process": getattr(self, f"app_proc_{i}").get().strip()
+                    })
+                    valid_app_count += 1
             
             with open("config.json", "w", encoding='utf-8') as f:
                 json.dump(config, f, indent=2, ensure_ascii=False)
@@ -253,7 +308,7 @@ class SetupApp:
                 messagebox.showinfo("Éxito", "✅ Configuración guardada correctamente.\n\n(Las dependencias no se reinstalaron. Marca la casilla si necesitas reinstalarlas.)")
 
         except Exception as e:
-            messagebox.showerror("Error", f"No se pudo guardar la configuración: {e}")
+            messagebox.showerror("Error", f"Error inesperado al guardar: {e}")
 
     def _get_shortcut_params(self):
         """Devuelve los parámetros comunes para crear accesos directos."""
