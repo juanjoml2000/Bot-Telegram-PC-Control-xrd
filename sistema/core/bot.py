@@ -3,7 +3,20 @@ import time
 import subprocess
 import psutil
 import json
+import asyncio
 from dotenv import load_dotenv
+
+def _get_procesos():
+    procesos = []
+    for proc in psutil.process_iter(['name', 'memory_info']):
+        try:
+            pinfo = proc.info
+            memoria_mb = pinfo['memory_info'].rss / (1024 * 1024)
+            procesos.append({'name': pinfo['name'], 'mem': memoria_mb})
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return sorted(procesos, key=lambda p: p['mem'], reverse=True)
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
@@ -107,7 +120,7 @@ async def recibir_mensaje(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await update.message.reply_text(f"⏳ Intentando cerrar: {proceso_a_cerrar}...")
         
         comando = f'taskkill /IM "{proceso_a_cerrar}" /F'
-        resultado = os.system(comando)
+        resultado = await asyncio.to_thread(os.system, comando)
         
         if resultado == 0:
             await update.message.reply_text(f"✅ ¡El proceso {proceso_a_cerrar} se cerró correctamente!")
@@ -165,12 +178,12 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         gid = str(game['id'])
         if opcion == f'abrir_juego_{gid}':
             await query.edit_message_text(text=f"🎮 Iniciando {game['name']} via Steam...", reply_markup=get_games_menu())
-            os.system(f"start steam://rungameid/{game['steam_id']}")
+            await asyncio.to_thread(os.system, f"start steam://rungameid/{game['steam_id']}")
             return
         elif opcion == f'cerrar_juego_{gid}':
-            os.system(f'taskkill /IM "{game["process"]}" /F')
+            await asyncio.to_thread(os.system, f'taskkill /IM "{game["process"]}" /F')
             if "RainbowSix" in game["process"]:
-                os.system("taskkill /IM RainbowSix_Vulkan.exe /F")
+                await asyncio.to_thread(os.system, "taskkill /IM RainbowSix_Vulkan.exe /F")
             await query.edit_message_text(text=f"❌ {game['name']} cerrado.", reply_markup=get_games_menu())
             return
 
@@ -184,12 +197,15 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             if "Discord" in app['name']:
                 argumentos = ["--processStart", "Discord.exe"]
             if ruta and os.path.exists(ruta):
-                subprocess.Popen([ruta] + argumentos)
+                if argumentos:
+                    await asyncio.to_thread(subprocess.Popen, [ruta] + argumentos)
+                else:
+                    await asyncio.to_thread(os.startfile, ruta)
             else:
                 await query.edit_message_text(text=f"❌ Error: Ruta no encontrada para {app['name']}. Revisa el .env ({app['env_key']})", reply_markup=get_apps_menu())
             return
         elif opcion == f'cerrar_app_{aid}':
-            os.system(f'taskkill /IM "{app["process"]}" /F')
+            await asyncio.to_thread(os.system, f'taskkill /IM "{app["process"]}" /F')
             await query.edit_message_text(text=f"❌ {app['name']} cerrado.", reply_markup=get_apps_menu())
             return
 
@@ -197,15 +213,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if opcion == 'sistema_procesos':
         await query.edit_message_text(text="⏳ Recopilando lista de procesos...")
         try:
-            procesos = []
-            for proc in psutil.process_iter(['name', 'memory_info']):
-                try:
-                    pinfo = proc.info
-                    memoria_mb = pinfo['memory_info'].rss / (1024 * 1024)
-                    procesos.append({'name': pinfo['name'], 'mem': memoria_mb})
-                except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                    pass
-            procesos = sorted(procesos, key=lambda p: p['mem'], reverse=True)
+            procesos = await asyncio.to_thread(_get_procesos)
             texto_procesos = "🖥️ **Top 15 Procesos (RAM)**\n\n"
             for p in procesos[:15]:
                 texto_procesos += f"• `{p['name']}` - {p['mem']:.1f} MB\n"
@@ -222,30 +230,30 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         
     elif opcion == 'sistema_apagar':
         await query.edit_message_text(text="⏻ ¡Apagando el PC en 5 segundos!", reply_markup=get_main_menu())
-        os.system("shutdown /s /t 5")
+        await asyncio.to_thread(os.system, "shutdown /s /t 5")
         return
     
     elif opcion == 'sistema_reiniciar':
         await query.edit_message_text(text="🔄 ¡Reiniciando el PC en 5 segundos!", reply_markup=get_main_menu())
-        os.system("shutdown /r /t 5")
+        await asyncio.to_thread(os.system, "shutdown /r /t 5")
         return
 
     # --- ACCIONES: MULTIMEDIA ---
     elif opcion == 'abrir_youtube':
         await query.edit_message_text(text="🔓 Abriendo YouTube...", reply_markup=get_multimedia_menu())
-        os.system("start https://www.youtube.com")
+        await asyncio.to_thread(os.system, "start https://www.youtube.com")
         
     elif opcion == 'cerrar_youtube':
-        os.system("taskkill /IM chrome.exe /F")
-        os.system("taskkill /IM msedge.exe /F")
+        await asyncio.to_thread(os.system, "taskkill /IM chrome.exe /F")
+        await asyncio.to_thread(os.system, "taskkill /IM msedge.exe /F")
         await query.edit_message_text(text="❌ Navegador cerrado.", reply_markup=get_multimedia_menu())
 
     elif opcion == 'abrir_spotify':
         await query.edit_message_text(text="🔓 Abriendo Spotify...", reply_markup=get_multimedia_menu())
-        os.system("start spotify:")
+        await asyncio.to_thread(os.system, "start spotify:")
         
     elif opcion == 'cerrar_spotify':
-        os.system("taskkill /IM Spotify.exe /F")
+        await asyncio.to_thread(os.system, "taskkill /IM Spotify.exe /F")
         await query.edit_message_text(text="❌ Spotify cerrado.", reply_markup=get_multimedia_menu())
 
 application = None
@@ -258,7 +266,7 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(button))
     
     print("Bot iniciado. Esperando órdenes...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    application.run_polling(allowed_updates=["message", "callback_query"])
 
 if __name__ == '__main__':
     main()

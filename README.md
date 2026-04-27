@@ -165,3 +165,24 @@ Este proyecto es de uso personal y educativo.
 
 > [!TIP]
 > **Seguridad**: Nunca comparta su archivo `.env` ni su API Token. Estos datos otorgan control total sobre el sistema.
+
+---
+
+## Comparte tu proyecto
+
+Si quieres promocionar tu proyecto en LinkedIn, aquí tienes una versión breve y directa para acompañar tu captura de pantalla:
+
+---
+
+🚀 **Lancé un bot de Telegram para controlar mi PC desde el móvil**
+
+- Abrir/cerrar juegos y apps
+- Ver procesos activos
+- Apagar o reiniciar el PC remoto
+- Controlar YouTube y Spotify
+
+Todo desde Telegram, con instalador automático y funciona en segundo plano.
+
+Python + python-telegram-bot.
+
+#Desarrollo #Python #Automatización

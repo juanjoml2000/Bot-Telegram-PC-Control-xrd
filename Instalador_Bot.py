@@ -214,9 +214,9 @@ class SetupApp:
                         k, v = line.strip().split("=", 1)
                         if k == "TELEGRAM_TOKEN": self.entry_token.insert(0, v)
                         elif k == "ADMIN_ID": self.entry_admin_id.insert(0, v)
-                        elif k == "DISCORD_PATH": self.app_path_1.insert(0, v)
-                        elif k == "STEAM_PATH": self.app_path_2.insert(0, v)
-                        elif k == "STATS_CC_PATH": self.app_path_3.insert(0, v)
+                        elif k == "APP1_PATH": self.app_path_1.insert(0, v)
+                        elif k == "APP2_PATH": self.app_path_2.insert(0, v)
+                        elif k == "APP3_PATH": self.app_path_3.insert(0, v)
 
         # Cargar config.json
         config_path = "config.json"
@@ -249,9 +249,9 @@ class SetupApp:
             env_content = [
                 f"TELEGRAM_TOKEN={self.entry_token.get().strip()}",
                 f"ADMIN_ID={self.entry_admin_id.get().strip()}",
-                f"DISCORD_PATH={self.app_path_1.get().strip()}",
-                f"STEAM_PATH={self.app_path_2.get().strip()}",
-                f"STATS_CC_PATH={self.app_path_3.get().strip()}"
+                f"APP1_PATH={self.app_path_1.get().strip()}",
+                f"APP2_PATH={self.app_path_2.get().strip()}",
+                f"APP3_PATH={self.app_path_3.get().strip()}"
             ]
             
             try:
@@ -281,7 +281,7 @@ class SetupApp:
                     valid_game_count += 1
             
             # Filtrar solo apps que tengan nombre
-            env_keys = ["DISCORD_PATH", "STEAM_PATH", "STATS_CC_PATH"]
+            env_keys = ["APP1_PATH", "APP2_PATH", "APP3_PATH"]
             valid_app_count = 1
             for i in range(1, 4):
                 name = getattr(self, f"app_name_{i}").get().strip()
